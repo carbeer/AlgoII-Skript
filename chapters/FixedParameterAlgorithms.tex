@@ -1,0 +1,20 @@
+\chapter{Fixed-Parameter-Algorithmen}
+
+Für einfache Instanzen NP-harter Probleme können ggf. exakte Lösungen gefunden werden. 
+Dazu führen wir den Parameter $k = Ausgabegröße$ ein. Wenn $k$ klein ist, dann ist das Problem einfach.
+
+
+\section{Fixed Parameter Tractable (FPT)}
+$L\in FPT$ bzgl. Parameter $k$ gdw. ein Algorithmus existiert mit einer Laufzeit in $O(f(k)\cdot p(n))$ mit $f$ als von $n$ unabhängiger Funktion und $p$ einem von $k$ unabhängigem Polynom (welches aber von $n$ abhängen darf).
+
+\section{Vertex Cover/ Kantenabdeckung}
+
+\begin{itemize}
+  \item \textbf{Eingabe}: ungerichteter Graph $G=(V,E)$ mit $k\in \mathbb{N}$.
+  \item \textbf{Problemstellung}: $\exists V' \subset V: |V'| = k \land \forall {u,v} \in E: u\in V' \lor v \in V'$. D.h. gibt es eine Teilmenge an $k$ Knoten, sodass jede Kante inzident zu einem ausgewählten Knoten ist.
+  \item \textbf{Lösungsansatz}: 
+  \begin{itemize}
+  	\item Mittels Kernbildung (Kernelization): $\text{degree}(v)>k \Rightarrow v \in \text{Lösung} \lor \text{unlösbar}$. Füge also iterativ alle Knoten mit Grad größer $k$ hinzu und reduziere $k$ um 1.
+  	\item Mittels tiefenbeschränkter Suche: Wähle eine Kante. Rufe den Algorithmus rekursiv mit Parametern $k-1$ und jeweils einem der Endknoten aus $G$ entfernt auf. Für $|E|=0$ gib True zurück, für $k=0$ gib False zurück. Der Algoritmus hat eine Laufzeit von $O((n+m)\cdot 2^k)$.
+  \end{itemize}
+\end{itemize}

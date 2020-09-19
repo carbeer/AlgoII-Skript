@@ -14,7 +14,7 @@ Es gibt sehr viele Modelle der Parallelverarbeitung, wir werden hier allerdings 
 \begin{itemize}
   \item \textbf{Prozessornetzwerke mit} \term{Nachrichtenkopplung}\index{Nachrichtenkopplung}.
 
-    Prozessoren sind hier ``normale CPUs'' mit lokalen Speicher. Gemeinsam mit seinem lokalen Speicher wird eine lokale CPU auch \emph{processing element} (PE) genannt. Der Datenaustausch passiert über ein Netzwerk in Form von Nachrichten zwischen zwei Prozessoren.
+    Prozessoren sind hier ``normale CPUs'' mit lokalem Speicher. Gemeinsam mit seinem lokalen Speicher wird eine lokale CPU auch \emph{processing element} (PE) genannt. Der Datenaustausch passiert über ein Netzwerk in Form von Nachrichten zwischen zwei Prozessoren.
   \item \textbf{Parallele Registermaschinen mit} \term{Speicherkopplung}\index{Speicherkopplung}.
 
     Auch hier wird mit normalen CPUs gearbeitet, allerdings haben diese keinen lokalen Speicher, sondern sind über ein Netzwerk mit Speichermodulen verbunden, auf welche alle CPUs zugreifen können. Der Datenaustausch erfolgt über das Netzwerk zwischen einer CPU und einem Speicher.
@@ -57,7 +57,7 @@ Als eine gute Strategie hat es sich erwiesen, den Entwurf für einen verteilten 
     \item voll-duplex
     \item Nachrichten überholen sich nicht
   \end{itemize}
-  \item \textbf{Prozessoren}: können jeweils maximal gleichzeitig
+  \item \textbf{Prozessoren}: RAMs, können jeweils maximal gleichzeitig
   \begin{itemize}
     \item eine Nachricht an einen beliebigen Empfänger senden (send(smsg,to))
     \item eine Nachricht von einem beliebigen Sender empfangen (rmsg \( \coloneqq \) recv(from))
@@ -71,7 +71,18 @@ Als \emph{Kostenmodell} für das Senden oder Empfangen von \( l \) Bytes verwend
 \end{equation*}
 wobei in der Praxis meist \( T_\text{byte} \ll T_\text{start} \). Ignoriert wird hier unter anderem der ``Abstand'' zwischen Sender und Empfänger.
 
-Als \emph{Programmiermodell} verwenden wir \term{SPMD}\index{SPMD} (\emph{single program multiple data}). Alle PEs führen hier dasselbe Programm aus, unterschieden wird lediglich durch ``Ränge'' der PEs (paarweise verschiedene PE-Nummern).
+Als \emph{Programmiermodell} verwenden wir \term{SPMD}\index{SPMD} (\emph{single program multiple data}). Alle PEs führen hier dasselbe Programm aus, unterschieden wird (zur Symmetriebrechung) häufig durch ``Ränge'' der PEs (paarweise verschiedene PE-Nummern).
+
+\subsection{Analyse}
+\begin{itemize}
+	\item Ausführungszeit: $T(p)$. 
+	\item Arbeit: $W=p\cdot T(p)$. Ist ein Kostenmaß.
+	\item Span: $T_\infty = min_p T(p)$. Misst Parallelisierbarkeit. Für beliebig viele Prozessoren der kleinste Wert.
+	\item Absoluter Speedup: $S=\frac{T_Seq}{T(p)}$. Entspricht der Beschleunigung gegenüber dem besten sequenziellen Algorithmus. 
+	\item Relativer Speedup: $\frac{T(1)}{T(p)}$. 
+	\item Effizienz: $E=\frac{S}{p}$. Superlinearer Speeup für relative Beschleunigung über 1, idR. nicht möglich (außer wenn plötzlich alles in den Cache passt, usw.). Ziel ist es aber generell Werte nahe $1$ oder in $\Theta(1)$ zu erreichen. 
+\end{itemize}
+
 
 \subsection{Parallele Reduktion}
 
@@ -89,7 +100,7 @@ Im Folgenden gehen wir über die grundlegenden Werkzeuge, die wir benötigen, um
 Nun gilt folgender Satz:
 
 \begin{theorem}
-  Wenn \( \otimes \) eine binäre, assoziative Operation ist und \( p \) Elemente \( x_0,\dots,x_{p-1} \) auf \( p \) PEs verteilt sind, dann kann man \( \bigotimes_{i < p}x_i \) in Zeit \( O(\log p) \) auf PE \( 0 \) berechnen.
+  Wenn \( \otimes \) eine assoziative Operation ist, welche sich in konstanter Zeit berechnen lässt, und \( p \) Elemente \( x_0,\dots,x_{p-1} \) auf \( p \) PEs verteilt sind, dann kann man \( \bigotimes_{i < p}x_i \) in Zeit \( O(\log p) \) auf PE \( 0 \) berechnen. 
 \end{theorem}
 
 \begin{figure}[H]
@@ -97,7 +108,7 @@ Nun gilt folgender Satz:
   \caption{Idee hinter obigem Satz}
 \end{figure}
 
-Sequenziell wäre die optimale Laufzeit \( O(n) \) gewesen. Auf \( p = n \) PEs hätte man nach obigem Satz eine Laufzeit von \( O(\log n) \) erreicht, also eine Beschleunigung von \( O\left( \frac{n}{\log n} \right) \). ``Ideal'' wäre eine Beschleunigung von \( O(p) = O(n) \) gewesen.
+Sequenziell wäre die optimale Laufzeit \( O(n) \). Auf \( p = n \) PEs hätte man nach obigem Satz eine Laufzeit von \( O(\log n) \) erreicht, also eine Beschleunigung von \( O\left( \frac{n}{\log n} \right) \). ``Ideal'' wäre eine Beschleunigung von \( O(p) = O(n) \).
 
 Wie kann man die Beschleunigung noch weiter verbessern?
 
@@ -110,92 +121,8 @@ Laufzeit hierfür ist \( O(n/p) + O(\log p) \) und die Beschleunigung somit
 \end{equation*}
 Ist \( p \in O(n/\log n) \), so ist die Beschleunigung \( O(p) \).
 
-Man kann also durch Verringerung der Prozessorzahl \( p \) die Beschleunigung in die Nähe von \( p \) bringen. Dieses Prinzip nennt man \term{Brent's Prinzip}\index{Brent's Prinzip}.
+Man kann also durch Verringerung der Prozessorzahl \( p \) die Beschleunigung in die Nähe von \( p \) bringen. Ineffiziente Algorithmen werden also durch Verringerung der Prozessorzahl effizient. Dieses Prinzip nennt man \term{Brent's Prinzip}\index{Brent's Prinzip}.
 
-\subsection{Analyse paralleler Programme}
-
-Wir interessieren uns in erster Linie für
-\begin{itemize}
-  \item Laufzeit,
-  \item Beschleunigung und
-  \item verrichtete Arbeit.
-\end{itemize}
-
-Es ist
-\begin{itemize}
-  \item \( T_\text{par}(I,p) \) die parallele Laufzeit der Probleminstanz \( I \), bearbeitet mit \( p \) PEs,
-  \item \( T_\text{seq}(I) \) die sequenzielle Laufzeit der Probleminstanz \( I \) mit dem ``besten bekannten Algorithmus''.
-\end{itemize}
-
-Im Allgemeinen ist \( T_\text{seq}(I) < T_\text{par}(I,1) \). Man erhält aber leicht Gleichheit, indem man den parallelen Algorithmus einfach den sequenziellen ausführen lässt, falls nur ein PE zur Verfügung steht.
-
-\begin{definition}[Speedup]
-  Wir definieren den \term{Speedup}\index{Speedup} als
-  \begin{equation*}
-    S(I,p) = \frac{T_\text{seq}(I)}{T_\text{par}(I,p)}\text{.}
-  \end{equation*}
-  Vergröbert für alle Probleminstanzen der Größe \( n \):
-  \begin{equation*}
-    S(n,p) = \inf\left \{ S(I,p) : n = \left\vert I \right\vert \right \}\text{.}
-  \end{equation*}
-\end{definition}
-
-Zur Berechnung des Speedups können wir praktischerweise folgende Spezialfälle benutzen, die für Instanzen \( I \), \( I' \) gleicher Größe \( n \) gelten:
-\begin{itemize}
-  \item \( T_\text{par}(I,p) = T_\text{par}(I',p) = T_\text{par}(n,p) \),
-  \item \( T_\text{seq}(I) = T_\text{seq}(I') = T_\text{seq}(n) \)
-\end{itemize}
-
-Simuliert man \( p \) Prozessoren durch einen Prozessor, so sehen wir, dass ein sequenzieller Algorithmus nie langsamer als \( O(p*T_\text{par}(I,p)) \) sein kann, weswegen immer \( \frac{T_\text{seq}(I)}{T_\text{par}(I,p)} \in O(p) \) ist und \( S(n,p) \in O(p) \) ebenfalls.
-
-\begin{definition}[Effizienz]
-  Wir definieren die \term{Effizienz}\index{Effizienz} eines parallelen Algorithmus als
-  \begin{equation*}
-    E(n,p) \coloneqq \frac{S(n,p)}{p}\text{.}
-  \end{equation*}
-  Es ist \( S(n,p) \in O(p) \) und daher \( E(n,p) \in O(1) \). Tatsächlich ist sogar \( E(n,p) > 1 \) möglich (sogenannter \emph{superlinearer Speedup}).
-\end{definition}
-
-Es ist
-\begin{equation*}
-  E(n,p) \in \frac{T_\text{par}(n,p)}{p*T_\text{seq}(n)}\text{.}
-\end{equation*}
-
-\begin{definition}[Arbeit]
-  Wir definieren \term{Arbeit}\index{Arbeit} als
-  \begin{equation*}
-    W(n,p) \coloneqq p*T_\text{par}(n,p) \text{.}
-  \end{equation*}
-\end{definition}
-
-Mit obiger Definition gilt
-\begin{equation*}
-  E(n,p) = \frac{S(n,p)}{p} = \frac{T_\text{seq}(n)}{T_\text{par}(n,p)*p} = \frac{T_\text{seq}(n)}{W(n,p)}\text{.}
-\end{equation*}
-
-Wir können nun die parallele Reduktion mit \( p < n \) von vorhin genauer analysieren:
-\begin{itemize}
-  \item Es werden zuerst \( \tfrac{n}{p} \) Elemente sequenziell und anschließend \( p \) partielle Summen reduziert.
-  \item \textbf{Laufzeit}: \( T_\text{par}(n,p) = O(n/p) + O(\log p) \)
-  \item \textbf{Beschleunigung}: \( S(n,p) = \frac{O(n)}{O(n/p + \log p)} \)
-  \item \textbf{Effizienz}: \( E(n,p) = \frac{O(n)}{O(n+p\log p)} \)
-\end{itemize}
-
-Wir betrachten noch die zwei Sonderfälle:
-\begin{itemize}
-  \item \( p = n \):
-  \begin{itemize}
-    \item \( S(n,n) \in O\left( \frac{n}{\log n} \right) \)
-    \item \( E(n,n) \in O\left( \frac{1}{\log n} \right) \)
-  \end{itemize}
-  \item \( p \in O\left( \frac{n}{\log n} \right) \):
-  \begin{itemize}
-    \item \( S(n,p) = O(p) \)
-    \item \( E(n,p) = O(1) \)
-  \end{itemize}
-\end{itemize}
-
-Wir erkennen hier die größere Effizienz für kleinere \( p \) (nach Brents Prinzip).
 
 \subsection{Parallele Präfixsummen}
 
@@ -227,7 +154,7 @@ Wir berechnen nun Präfixsummen auf einem solchen Hyperwürfel:
   \textbf{for} \( k \coloneqq 0 \) \textbf{to} \( d - 1 \) \textbf{do} \\
   \phantom{\enskip} \( s' \coloneqq \textsc{sendRecv}(s,i \oplus 2^k, i \oplus 2^k) \) \\
   \phantom{\enskip} \( s \coloneqq s \otimes s' \) \\
-  \phantom{\enskip} \textbf{if} \( i_k \equiv 1 \) \textbf{then} \( y \coloneqq y \otimes s' \) \\
+  \phantom{\enskip} \textbf{if} \( i_k \equiv 1 \) \textbf{then} \( y \coloneqq y \otimes s' \) 
   \textcolor{gray}{// auf PE \( i \) liegt \( y_i = x_0 \otimes \cdots \otimes x_i \)}
 \end{pseudocode}
 
@@ -236,7 +163,7 @@ Wir erhalten eine Laufzeit
   T_\text{prefix} \in O((T_\text{start} + l * T_\text{byte}) * \log p)\text{.}
 \end{equation*}
 
-Diese Laufzeit ist nicht optimal. Wie man sie optimieren kann wird in der Vorlesung ``Parallele Algorithmen'' näher erläutert.
+Diese Laufzeit ist nicht optimal für $l * T_\text{byte} > T_\text{start}$. Wie man sie optimieren kann wird in der Vorlesung ``Parallele Algorithmen'' näher erläutert.
 
 \subsection{Paralleles Sortieren}
 
@@ -263,23 +190,23 @@ Wir schauen uns den \term{Theoretiker-Quicksort}\index{Theoretiker-Quicksort} an
 \begin{pseudocode}
   \textcolor{gray}{// Teil 0: Vorbereitungen} \\
   \textbf{\textsc{theoQSort0}}\( (x) \) \\
-  \( i \coloneqq \text{commRank}() \) \\
-  \( p \coloneqq \text{commSize}() \) \enskip \textcolor{gray}{// hier hat PE \( i \) Element \( x_i \)} \\
-  \( \text{theoQSort}(x,0,p-1) \) \\
+  \( i \in {0,p-1} \)  \enskip \textcolor{gray}{// hier hat PE \( i \) Element \( x_i \)} \\
+  \( p \coloneqq \text{Anzahl aller PEs} \)\\
+  \( \text{theoQSort}(x,i,p) \) \\
   \ \\
   \textcolor{gray}{// Teil 1: kleine Elemente zählen} \\
   \textbf{\textsc{theoQSort}}\( (x,\dots) \) \\
-  \textbf{if} \( i \equiv 0 \) \textbf{then} \( \text{ipv} \coloneqq \text{randInt}(0,p) \) \\
-  \( \text{ipv} \coloneqq \text{bcast}(\text{ipv}, 0) \) \\
-  \( \text{pv} \coloneqq \text{bcast}(x, \text{ipv}) \) \\
-  \( \text{small} \coloneqq (x \leq \text{pv}) \) \\
-  \( j \coloneqq \text{prefixSum}(\text{small},+) \) \\
-  \( p' \coloneqq \text{bcast}(j,p-1) \) \\
+  \textbf{if} \( p = 1 \) \textbf{then} \( \text{return} \) \\
+  \(r \coloneqq rand(0,p-1) \) \enskip \textcolor{gray}{// derselbe Wert in der gesamten Partition} \\
+  \( \text{pv} = d@r\) \enskip \textcolor{gray}{broadcast value of pivot}\\
+  \( \text{small} \coloneqq (d \leq \text{pv}) \) \\
+  \( j \coloneqq \text{prefixSum}(\text{small},0,i) \) \\
+  \( p' \coloneqq \text{bcast}(j,p-1) \)\enskip \textcolor{gray}{$p'$ ist der border index} \\
   \ \\
   \textcolor{gray}{// Teil 2: Datenumverteilung und Rekursion} \\
-  \textbf{if} \( \text{small} \equiv 1 \) \textbf{then} \( \text{send}(x,j-1) \) \\
-  \textbf{else} \( \text{send}(x,p'+i-j) \) \\
-  \( x \coloneqq \text{recv}(\text{any}) \) \\
+  \textbf{if} \( \text{small} \equiv 1 \) \textbf{then} \( \text{send}(d,j-1) \) \\
+  \textbf{else} \( \text{send}(d,p'+i-j) \) \\
+  \( d \coloneqq \text{recv}() \) \\
   recursive theoQSort of ``left''/``right'' part
 \end{pseudocode}
 

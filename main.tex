@@ -1,7 +1,7 @@
 \documentclass[ngerman,red]{latex-classes/prose}
-
+\usepackage[toc,page]{appendix}
 \title{Notizen zu Algorithmen II}
-\author{Jens Ochsenmeier}
+\author{Jens Ochsenmeier, Carolin Beer}
 
 \begin{document}
 
@@ -10,19 +10,32 @@
   \tableofcontents
 
   % chapters
-  \input{chapters/RandomizedAlgorithms}
-  \input{chapters/ApproximationAlgorithms}
-  \input{chapters/Stringology}
-  \input{chapters/RangeMinimumQueries}
-  \input{chapters/BurrowsWheeler}
-  \input{chapters/GeometricAlgorithms}
-  \input{chapters/OnlineAlgorithms}
-  \input{chapters/ParallelAlgorithms}
+  \input{chapters/AlgorithmEngineering}
   \input{chapters/AdvancedDatastructures}
   \input{chapters/ShortestPaths}
   \input{chapters/DFS}
   \input{chapters/FlowsMatchings}
+  \input{chapters/RandomizedAlgorithms}
   \input{chapters/ExternalAlgorithms}
+  \input{chapters/ApproximationAlgorithms}
+  \input{chapters/FixedParameterAlgorithms}
+  \input{chapters/ParallelAlgorithms}
+  \input{chapters/Stringology}
+  \input{chapters/BurrowsWheeler}
+  \input{chapters/COBS}
+  \input{chapters/GeometricAlgorithms}
+  \input{chapters/OnlineAlgorithms}
+
+  \begin{appendices}
+    \input{appendix/AmortizedAnalysis}
+    \input{appendix/Misc}
+
+% Moved to appendix because not part of the current curriculum anymore.  
+% \input{chapters/RangeMinimumQueries}
+
+
+  \end{appendices}
+
 
   \printindex
   

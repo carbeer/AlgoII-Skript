@@ -1,57 +1,32 @@
 \chapter{Approximationsalgorithmen}
 
-\section{Suchprobleme}
+Idee: Für NP-harte Probleme, finde Lösungen welche in polynomieller Zeit garantiert "nah" am Optimum dran sind.
 
-\begin{itemize}
-  \item Für Probleminstanz $ I \in M_I $ gibt es Menge $ M_S(I) $ möglicher Lösungen $ S \in M_S(I) $
-  \item \textbf{Zielfunktion} $ f: \bigcup_{I \in M_I} M_S(I) \to \R_+ $
-  \item \textbf{Minimierungsproblem}: $ \forall I \in M_I \ \exists \ f^*(I) \coloneqq \min\{ f(S) : S \in M_S(I) \} $
-  \begin{itemize}
-    \item gegeben: $ I $
-    \item gesucht: $ S $ mit $ f(S) = f^*(I) $
-  \end{itemize}
-  \item \textbf{Maximierungsproblem}: analog
-\end{itemize}
-
-\subsection{Approximation}
-
-\begin{itemize}
-  \item Lösungen $ S $ mit $ f(S) = f^*(I) $ oft schwer zu finden (z.B. \textbf{NP}-schwer)
-  \item \textbf{Auswege}:
-  \begin{itemize}
-    \item \emph{naiv}: alle möglichen Lösungen betrachten $ \leadsto $ oft zu aufwändig
-    \item \emph{ad-hoc-Heuristiken}: Qualität der Antwort eventuell unklar
-    \item \emph{Approximationsalgorithmus} $ A $:
-    \begin{itemize}
-      \item $ f(A(I)) $ ``möglichst nah an'' $ f^*(I) $
-      \item \textbf{Optimierungsaufgabe}
-      \item möglichst polynomielle Laufzeit
-      \item Garantie für Lösungsgüte
-    \end{itemize}
-  \end{itemize}
-\end{itemize}
 
 \section{Job Scheduling}
 
 \begin{itemize}
-  \item \textbf{Problem}: $ m $ Maschinen sollen $ n $ Jobs abarbeiten, möglichst alle gleichzeitig fertig
+  \item \textbf{Problem}: $ m $ Maschinen sollen $ n $ gewichtete Jobs abarbeiten, möglichst alle gleichzeitig fertig
   \begin{itemize}
     \item \emph{Maschinen} $ M_1, \dots, M_m $
     \item \emph{Jobs} $ J_1, \dots, J_n $
     \item \emph{Lösung} $ S: \{ 1,\dots,n \} \to \{ 1,\dots,m \} $
     \item \emph{Last} von Maschine $ i $: $ L_i = \sum_{S(j) = i}t_j $
     \item \emph{Zielfunktion}: minimiere Makespan $ L_\text{max} = \text{max}_iL_i $ (Wann ist letzte Maschine fertig?)
-    \item \emph{einfacher Fall}: identische Maschinen, unabhängige Jobs
+    \item \emph{einfacher Fall}: identische Maschinen, unabhängige Jobs, bekannte Ausführungszeiten
     \item Problem ist \textbf{NP}-hart
   \end{itemize}
-  \item \textbf{Approximationsfaktor}: Approximationsalgorithmus $ A $ für Minimierungsproblem mit Zielfunktion $ f $ erzielt \emph{Approximationsfaktor} $ \rho $, falls
+  \item \textbf{Lösungsansatz}: Füge iterativ einen Job zu der aktuell am wenigsten ausgelasteten Maschine hinzu. Dann ist $L_max \leq \sum_j \frac{t_j}{m} + \frac{m-1}{m}\cdot t_\mathcal{l}$ für zuletzt beendeten Job $\mathcal{l}$. Dies entspricht der durchschnittlichen Zeit für alle anderen Jobs plus der Zeit für $t_\mathcal{l}$.
+  \item \textbf{Approximationsfaktor}: Approximationsalgorithmus für ein Minimierungsproblem mit Zielfunktion $ f $ erzielt \emph{Approximationsfaktor} $ \rho $, falls er eine Lösung $x(I)$ findet sodass gilt:
   \begin{equation*}
-    \forall I \in M_I : \tfrac{f(A(I))}{f^\ast(I)} \leq \rho
+    \forall I \in M_I : \tfrac{f(x(I))}{f(x^\ast(I)())} \leq \rho
   \end{equation*}
   \begin{itemize}
     \item \emph{einfacher Fall}: $ \rho = 1 \leadsto A $ liefert stets optimale Lösung
   \end{itemize}
 \end{itemize}
+
+Das hier vorgestellte ListScheduling erzielt einen Approximationsfaktor von $2-1/m$ 
 
 \section{Turing-Reduzierbarkeit}
 
@@ -76,18 +51,6 @@
   \item \textbf{Gesucht}: Permutation $ \pi $ mit minimalem $ f(\pi) = f^*(G,c) $
 \end{itemize}
 
-\subsection{Approximation}
-
-\begin{itemize}
-  \item \textbf{Gegeben}:
-  \begin{itemize}
-    \item $ a \geq 1 $
-    \item \emph{Probleminstanz} (wie oben)
-    \item \emph{Zielfunktion} (wie oben)
-  \end{itemize}
-  \item \textbf{Gesucht}: Permutation $ \pi $ mit $ f(\pi) \leq a*f^*(G,c) $
-  \item \textbf{Satz}: Für jedes $ a \geq 1 $ ist TSP-$ a $-Approximations-Suchproblem \textbf{NP}-hart.
-\end{itemize}
 
 \section{Entscheidungsproblem --- Hamiltonkreis}
 
@@ -100,6 +63,26 @@
   \item Problem ist \textbf{NP}-vollständig
 \end{itemize}
 
+
+\subsection{a-Approximation}
+
+\begin{itemize}
+  \item \textbf{Gegeben}:
+  \begin{itemize}
+    \item $ a \geq 1 $
+    \item \emph{Probleminstanz} (wie oben)
+    \item \emph{Zielfunktion} (wie oben)
+  \end{itemize}
+  \item \textbf{Gesucht}: Permutation $ \pi $ mit $ f(\pi) \leq a*f^*(G,c) $
+  \item \textbf{Satz}: Für jedes $ a \geq 1 $ ist TSP-$ a $-Approximations-Suchproblem \textbf{NP}-hart. Beweisansatz über implementieren des Hamiltonkreis-Problems.
+\end{itemize}
+
+
+\section{Euler-Touren/-Kreise}
+Tour, welche jede Kante in einem Graphen genau einmal besucht. Dieses Problem lässt sich in Linearzeit $O(|E|+|V|)$ lösen. 
+
+Es lässt sich eine solche Tour finden gdw. $G$ zusammenhängen ist und $\forall v\in V: Grad(v) \text{ist gerade}$ gilt.
+
 \section{Metrisches TSP}
 
 \begin{itemize}
@@ -107,7 +90,8 @@
   \begin{equation*}
     \forall x, y, z \in V : c(x,y) + c(y,z) \geq c(x,z)
   \end{equation*}
-  \item \textbf{Satz}: Für Instanzen des Problems kann man in Polynomialzeit eine $ 2 $-Approximation berechnen
+  \item \textbf{Satz}: Für Instanzen des Problems kann man in Polynomialzeit eine $ 2 $-Approximation berechnen. 
+  \item \textbf{Lösungsansatz}: Bestimme MST, dupliziere alle Kanten, finde Eulerkreis und entferne Duplikate.
 \end{itemize}
 
 \section{Pseudopolynomielle Laufzeit}
@@ -126,10 +110,12 @@
     \end{equation*}
   \item \textbf{Achtung}!
   \begin{itemize}
-    \item \emph{Pseudopolynomielle Laufzeit}: Tatsächliche Form der Eingabe? 
+    \item \emph{Pseudopolynomielle Laufzeit}: Tatsächliche Form der Eingabe muss nicht unär erfolgen.
     \item Nicht verwechseln mit \emph{quasipolynomieller Laufzeit} $ t(n) = 2^{O((\log n)^c)} $ (Konstante $ c > 0 $)
   \end{itemize}
 \end{itemize}
+
+Alle bekannten Pseudopolynimiellen Approximationsalgorithmen verwenden Dynamische Programmierung.
 
 \section{Knapsack}
 
@@ -138,7 +124,7 @@
   \begin{itemize}
     \item \emph{Gegenst"ande} $ M = \{ 1,\dots,n \} $ 
     \item \emph{Maximalgr"o"se} $ W \in \N $ (Rucksackgr"o"se)
-    \item \emph{Gr"o"sen} $ w_i \in \N $ (oBdA jedes $ w_i \leq W $)
+    \item \emph{Gr"o"sen} $ w_i \in \N $ (oBdA jedes $ w_i \leq W $, es passt also alles alleine in den Rucksack)
     \item \emph{Profite} $ p_i \in \N $
     \item[$ \leadsto $] Gegenstand $ i $ hat Gr"o"se $ w_i $ und Profit $ p_i $
   \end{itemize}
@@ -176,7 +162,7 @@
   \begin{equation*}
     C(i,P) \coloneqq \min\{ w(M') : M \subseteq \{ 1, \dots, i \} \wedge p(M') \geq P \}
   \end{equation*}
-  falls ein solches $ M' $ existiert, $ \infty $ sonst.
+  falls ein solches $ M' $ existiert, $ \infty $ sonst. D.h. die kleinste Kapazität für Gegenstände $I$ mit Profit $\geq P$.
   \begin{align*}
     C(1,P) &= \begin{cases}
       w_1, &\text{falls } p_1 \geq P \\
@@ -244,8 +230,8 @@
   \begin{pseudocode}
     \textsc{\textbf{epsApproxKnapsack}}($ \epsilon, n, W, w, p $) \\
     $ P \leftarrow \max_ip_i $ \\
-    $ K \leftarrow \epsilon\tfrac{P}{n} $ \\
-    \textbf{each} $ p_i' \leftarrow \left\lfloor \tfrac{p_i}{K} \right\rfloor $ \\
+    $ K \leftarrow \epsilon\tfrac{P}{n} $ \enskip{} \textcolor{gray}{erlaubter Fehler pro Element, Skalierungsfaktor}\\
+    \textbf{each} $ p_i' \leftarrow \left\lfloor \tfrac{p_i}{K} \right\rfloor $ \enskip{} \textcolor{gray}{// skalierter Profit}\\
     $ x' \leftarrow $ \textsc{dynProgKnapsack}($ n, W, w, p' $) \\
     \textbf{return} x'  
   \end{pseudocode}

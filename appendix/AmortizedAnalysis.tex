@@ -1,0 +1,34 @@
+\chapter{Mathematische Grundlagen}
+\section{Amortisierte Analyse}
+
+\term{Amortisierte Laufzeiten} stellen eine Worst-Case-Analyse für eine Sequenz von Operationen dar.
+
+$A_{Op}$ sind die amortisierten Kosten einer Operation $Op \in \mathcal{O}$.
+$T_{Op}$ sind die tatsächlichen Kosten einer Operation $Op \in \mathcal{O}$.
+
+Die amortisierten Kosten sind korrekt, wenn für konstantes $c$ gilt:
+
+\begin{equation}
+	\sum_{1\leq i \leq n}T_{Op_i} \leq c + \sum_{1 \leq i \leq n}A_{Op_i}
+\end{equation}
+
+\subsection{Bankkonto- oder Potentialmethode}
+Finde ein Gehalt pro Operation, welches eine Obergrenze für die Kosten der Sequenz der Operationen darstellt. 
+
+\subsection{Aggregatmethode}
+Schätze $\sum_{1 \leq i \leq n}{T_{Op}^i}$ direkt ab.
+
+\subsection{Pseudotree}
+Ein zusammenhängender Pseudoforest, d.g. ein Graph der maximal einen Kreis enthält. Vom Kreis ausgehend sind es Trees.
+
+\section{Komplexitätsklassen}
+ 
+\begin{itemize}
+	\item $P$ 
+	\item $NP$
+	\item $NP\text{-vollständig}$: Menge der Probleme die in $NP$ liegen und $NP\text{-schwer}$ sind.
+	\item $NP\text{-schwer}$ oder $NP\text{-hart}$: Menge der Probleme auf die sich $NP\text{-Probleme}$ reduzieren lassen.
+\end{itemize}
+
+\section{Hyperwürfel}
+Ein Hyperwürfel der Dimension $n$ entsteht durch Verbindung zweier $n-1$-dimensionaler Würfel, wobei die äquivalenten Knoten jeweils miteinander verbunden werden. EIn Hyperwürfel in Dimension 0 ist ein einziger Knoten.

@@ -60,10 +60,20 @@ Es ist
 \begin{equation*}
   T_{\text{Dijkstra}} = O(m*T_\text{decreaseKey}(n) + n*(T_\text{deleteMin}(n) + T_\text{insert}(n)))\text{.}
 \end{equation*}
-Nutzen wir also Fibonacci-Heaps, so kriegen wir
+
+
+Nutzen wir Fibonacci-Heaps, so kriegen wir
 \begin{equation*}
   T_\text{DijkstraFib} = O(m+n\log n)\text{.}
 \end{equation*}
+
+Für Binary-Heaps ergibt sich die Laufzeit zu
+\begin{equation*}
+  T_\text{BinaryHeap} = O((m+n)\log n)\text{.}
+\end{equation*}
+Hierbei sind die konstanten Faktoren jedoch kleiner, als bei Fibonacci-Heaps.
+
+Da die Analyse zeigt, dass \code{decreaseKey} amortisiert lediglich $O(n \log \dfrac{m}{n}$ mal aufgerufen wird, ergibt sich die Laufzeit von Binary-Heaps für dichte Graphen ($m > n \log n \log \log n)$ jedoch als linear in $m$.
 
 \section{Monotone ganzzahlige Prioritätslisten}
 
@@ -108,20 +118,22 @@ Mit Bucket-Queues kriegen wir also den Dijkstra-Algorithmus auf \( O(m+\text{max
 
 \subsection{Radix-Heaps}
 
-Radix-Heaps sind eine Variante von Bucket Queues, die Buckets von \( -1 \) bis \( K \) für \( K = 1 + \lfloor \log C \rfloor \) benutzt. Wie vorhin schon betrachtet sei \( \min \) die zuletzt aus \( Q \) entfernte Distanz und somit
+Radix-Heaps sind eine Variante von Bucket Queues, die Buckets von \( -1 \) bis \( K \) für \( K = 1 + \lfloor \log C \rfloor \) benutzt. Wie vorhin schon betrachtet sei \( d^{*} \) die zuletzt aus \( Q \) entfernte Distanz und somit
 \begin{equation*}
-  \forall v \in Q : d[v] \in [\min,\dots,\min+C]\text{.}
+  \forall v \in Q : d[v] \in [d^{*},\dots,d^{*}+C]\text{.}
 \end{equation*}
 
-Wir betrachten die \emph{binäre Repräsentation} der möglichen Distanzen in \( Q \). Wir speichern \( v \) in Bucket \( B[i] \), falls sich \( d[v] \) und min zuerst an der \( i \)-ten Stelle unterscheiden (Ausnahmen: \( B[K] \) falls \( i > K \), \( B[-1] \) falls sie sich nicht unterscheiden).
+Wir betrachten die \emph{binäre Repräsentation} der möglichen Distanzen in \( Q \). Wir speichern \( v \) in Bucket \( B[i] \), falls sich \( d[v] \) und min zuerst an der \( i \)-ten Stelle unterscheiden.
 
 Das definiert die \term{Most Significant Digit}\index{Most Significant Digit} (kurz MSD) --- das ist die Position der höchstwertigen Ziffer in der Binärdarstellung von \( a \) und \( b \), an der sich die beiden unterscheiden. \( \text{msd}(a,b) \) kann mit Maschinenbefehlen sehr schnell berechnet werden.
 
 Wir nutzen folgende \emph{Radix-Heap-Invariante}:
 
 \begin{center}
-  \( v \) ist gespeichert in Bucket \( B[i] \), wo \( i = \min\left \{ \text{msd}(\min,d[v]),K \right \} \)
+  \( v \) ist gespeichert in Bucket \( B[i] \), wo \( i = \min\left \{ \text{msd}(d^{*},d[v]),K \right \} \)
 \end{center}
+
+Ausnahmen: Speichere in \( B[K] \) falls \( i > K \), speichere in \( B[-1] \) falls sie sich nicht unterscheiden.
 
 Wir können nun \code{deleteMin} folgendermaßen implementieren:
 
@@ -129,13 +141,19 @@ Wir können nun \code{deleteMin} folgendermaßen implementieren:
   \textbf{\textsc{deleteMin}}\( () : \) Element \\
   \textbf{if} \( B[-1] = \varnothing \) \textbf{then} \\
   \phantom{\enskip} \( i \coloneqq \min\left \{ j \in 0\dots K : B[j] \neq \varnothing \right \} \) \\
-  \phantom{\enskip} move \( \min B[i] \) to \( B[-1] \) and to min \\
+  \phantom{\enskip} move \( \min B[i] \) to \( B[-1] \) and to \( d^{*} \) \\
   \phantom{\enskip} \textbf{foreach} \( e \in B[i] \) \textbf{do} \enskip{} \textcolor{gray}{// exactly here the invariant is violated!} \\
-  \phantom{\enskip} \phantom{\enskip} move \( e \) to \( B[\min\left \{ \text{msd}(\min, d[v]), K \right \}] \) \\
+  \phantom{\enskip} \phantom{\enskip} move \( e \) to \( B[\min\left \{ \text{msd}(d^{*}, d[v]), K \right \}] \) \\
   \textbf{return} \( B[-1]\text{.popFront}() \)
 \end{pseudocode}
 
-Die \code{deleteMin}-Laufzeit ist \( O(K) \), insgesamt lässt sich also die Laufzeit des Dijkstra-Algorithmus hierdurch auf \( O(m + n\log C) \) drücken.
+Die amortisierte \code{deleteMin}-Laufzeit ist \( O(K) \), insgesamt lässt sich also die Laufzeit des Dijkstra-Algorithmus hierdurch auf 
+
+\begin{equation*}
+  T_\text{DijkstraRadix} = O(m + n\log C)
+\end{equation*}
+
+drücken.
 
 \section{All-Pairs Shortest Paths}
 
@@ -192,7 +210,7 @@ Wir berechnen die gewünschten Informationen nun so:
 \begin{enumerate}
   \item Wir fügen einen \emph{Hilfsknoten} \( s \) zu \( G \) hinzu.
   \item Wir fügen \( (s,v) \) für alle \( v \in V \setminus \left \{ s \right \} \) mit Kosten \( 0 \) hinzu.
-  \item Berechne die kürzesten Pfade von \( s \) aus mit Bellman-Ford.
+  \item Berechne $\mu (v) \forall v \in V$ als die kürzesten Pfade von \( s \) aus mit Bellman-Ford.
   \item Definiere \( \text{pot}(v) \coloneqq \mu(v) \) für alle \( v \in V \).
 
   Die reduzierten Kosten sind jetzt alle nicht-negativ, also können wir Dijkstra benutzen und ggf. \( s \) wieder entfernen.
@@ -206,14 +224,15 @@ Wir berechnen die gewünschten Informationen nun so:
   neuen Knoten \( s \) und alle Kanten \( s,v \) hinzufügen \enskip{} \textcolor{gray}{// \( O(n) \)} \\
   \( \text{pot} \coloneqq \mu \coloneqq \textsc{BellmanFordSSSP}(s,c) \) \enskip{} \textcolor{gray}{// \( O(nm) \)} \\
   \textbf{foreach} \( x \in V \) \textbf{do} \\
-  \phantom{\enskip} \( \overline{\mu}(x,\cdot) \coloneqq \textsc{DijkstraSSSP}(x,\overline{c}) \) \\
+  \phantom{\enskip} \( \overline{\mu}(x,\cdot) \coloneqq \textsc{DijkstraSSSP}(x,\overline{c}) \) \enskip{} \textcolor{gray}{// \( O(n(m+n \log n)) \)} \\
   \ \\
   \textcolor{gray}{// zurück zur ursprünglichen Kostenfunktion} \\
   \textbf{foreach} \( e = (v,w) \in V^2 \) \textbf{do} \enskip \textcolor{gray}{// \( O(n^2) \)} \\
   \phantom{\enskip} \( \mu(v,w) \coloneqq \overline{\mu}(v,w) + \text{pot}(w) - \text{pot}(v) \)
 \end{pseudocode}
 
-Die Gesamtlaufzeit beträgt also \( O(nm + n^2\log n) \).
+
+Die Gesamtlaufzeit wird von $n$ Dijkstra-Schritten dominiert und beträgt daher \( O(n(m + n \log n)) \).
 
 \section{Distanz zu Zielknoten}
 

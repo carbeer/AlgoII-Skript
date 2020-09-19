@@ -9,11 +9,16 @@
 \begin{minipage}{.35\textwidth}
   \begin{figure}[H]
     \includegraphics[width=\textwidth]{externalModel}
-    \caption{Sekundärspeicher-modell mit schnellem internen Speicher der Größe \( M \) und einem beliebig großem externen Speicher, der über einen \( B \) Wörter breiten Bus angebunden ist}
+    \caption{Sekund"ärspeicher-Modell mit schnellem internen Speicher der Größe \( M \) und einem beliebig großem externen Speicher, der über einen \( B \) Wörter breiten Bus angebunden ist}
   \end{figure}
 \end{minipage}
 
-\section{Mehrwegemischen}
+\section{Externe Stapel}
+Wir haben 2 interne Puffer mit Speicherplatz von je $B$ Wörtern. Für das Lesen und Schreiben ist amortisiert jeweils eine Laufzeit von $O(1/B)$ nötig, da bei Über-/Unterlauf jeweils ein Puffer als Block auf den/vom externen Speicher geschrieben/gelesen wird.
+
+\section{Externes Sortieren}
+
+\section{Mehrwegemischen, externes Mischen}
 
 Als nichttriviales Beispiel werden wir \term{Mehrwegemischen}\index{Mehrwegemischen} betrachten:
 
@@ -33,37 +38,62 @@ Der Aufwand beträgt
 
   \( \Rightarrow \) Insgesamt \( \leq \approx 2\frac{\sum_{i=1}^k \left\vert a_i \right\vert}{B} \)
 
-  \emph{Bedigungung}: brauchen \( k+1 \) Pufferblöcke.
-
-  \item \textbf{Interne Arbeit} durch Benutzung einer Prioritätsliste:
-  \begin{equation*}
-    O\left( \log k \sum_{i=1}^k \left\vert a_i \right\vert \right)
-  \end{equation*}
+  \emph{Bedigungung}: wir brauchen \( k+1 \) Pufferblöcke.
 \end{itemize}
 
-\subsection{Sortieren durch Mehrwegemischen}
-
-Wir können Mehrwegemischen verwenden, um zu sortieren:
+\subsection{Sortieren durch Mehrwegemischen mittels Run Formation}
+Ähnlich zu Merge Sort. Sortiere jeweils Eingabeportionen in sogenannten Runs der Größe $M$. Zunächst wurde das binäre Mischen mit $M/N = 2$ betrachtet. Mehrwegemischen ist eine Generalisierung dessen, welche eine bessere Laufzeit durch verringerung der Mischphasen erzielt.
+ 
+Wir können dann Mehrwegemischen verwenden, um zu sortieren: 
 
 \begin{enumerate}
-  \item Sortiere \( \left\lceil \tfrac{n}{M} \right\rceil \) runs mit je \( M \) Elementen.
-  \item Mische jeweils \( \tfrac{M}{B} \) runs, bis nur noch ein run übrig ist.
+  \item Sortiere \( \left\lceil \tfrac{n}{M} \right\rceil \) Runs mit je \( M \) Elementen.
+  \item Mische jeweils \( \tfrac{M}{B} \) Runs, bis nur noch ein Run übrig ist.
 \end{enumerate}
 
-Die Anzahl an I/Os setzt sich aus \( 2\tfrac{n}{B} \) I/Os für das sortieren, \( 2\tfrac{n}{B} \) I/Os für das Mischen und \( \left\lceil \log_{M/B} \tfrac{n}{M} \right\rceil \) Mischphasen zusammen, insgesamt also
 
-\begin{equation*}
+Die Anzahl an I/Os setzt sich aus \( 2\tfrac{n}{B} \) I/Os für das Sortieren, \( 2\tfrac{n}{B} \) I/Os für das Mischen und \( \left\lceil \log_{M/B} \tfrac{n}{M} \right\rceil \) Mischphasen zusammen, insgesamt also
+
+\begin{equation*} 
   \text{sort}(n) \cong \frac{2n}{B}\left( 1 + \left\lceil \log_{M/B} \frac{n}{M} \right\rceil \right) \enskip \text{I/Os.}
 \end{equation*}
 
-Die interne Arbeit setzt sich zusmamen aus
+Die interne Arbeit setzt sich aus
 \begin{itemize}
-  \item run formation: \( O(n\log M) \),
+  \item Run formation: \( O(n\log M) \),
   \item Zugriffe auf die Prioritätsliste pro Phase: \( O\left( n\log \tfrac{M}{B} \right) \),
   \item Anzahl Phasen: \( \left\lceil \log_{M/B} \tfrac{n}{M} \right\rceil \)
 \end{itemize}
-zusammen, insgesamt
+zusammen, insgesamt ergibts dich die Laufzeit dann zu:
 
 \begin{equation*}
   O\left( n \log M + n\log \tfrac{M}{B} * \left\lceil \log_{M/B} \tfrac{n}{M} \right\rceil \right) = O(n\log n)\text{.}
 \end{equation*}
+
+\section{Externe Prioritätslisten}
+Wir beschränken uns nur auf nicht-adressierbare PQs (also nur \code{insert} und \code{deleteMin}, kein \code{decreaseKey}, etc.).
+
+Ziel: amortisierte Kosten von $\theta(\frac{1}{B} \log_{M/B} \frac{n}{M})$.
+
+\subsection{Mittelgroße PQs}
+Annahme: $k\cdot m << M^2/B \text{\code{inserts}}$ 
+
+
+\begin{figure}[H]
+  \includegraphics[width=0.8\textwidth]{external_pq.png}
+\end{figure}
+
+
+
+Internal Storage: ein insertion PQ-Puffer mit Größe $m$ (konstanter Anteil von $M$) und eine deletion PQ die effektiv ein k-merge implementiert. Die deletion PQ speichert jeweils das kleinste Element einer Sequenz, zusammen mit dem Sequenzindex. Zudem sind jeweils bis zu $B$ Sequenzen im internal Memory gespeichert, die verbleibenden Blöcke im external Memory.
+ 
+Insertions werden nur bei Überlaufen in die Sequenzen geschrieben.
+Deletions erfolgen aus der PQ mit dem kleineren Minimum.
+Amortisiert $O(1/B)$ I/O-Zugriffe.
+
+Die interne Analyse bezieht sich vor allem auf den Aufwand für das erneute Sortieren der bestehenden Strukturen und beläuft sich auf $O(log m)$ 
+
+\section{Externe minimale Spannbäume}
+Annahme: $M=\Omega(n)$ konstant viele Worte pro Knoten. Also Knoten im Speicher, Kanten draußen.
+
+Sortiere Kanten nach aufsteigendem Gewicht. Initialisiere Treekomponenten als jeweils ihren eigenen Knoten. Füge dann iterativ die Kanten hinzu, die nicht innerhalb derselben Komponente liegen.

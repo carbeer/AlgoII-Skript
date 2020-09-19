@@ -4,7 +4,7 @@
 
 \term{Zusammenhangskomponenten}\index{Zusammenhangskomponente} in einem ungerichteten Graph sind Teilgraphen, in denen es zwischen je zwei beliebigen Knoten einen Pfad gibt.
 
-In gerichteten Graphen sind \term{starke Zusammenhangskomponenten}\index{Zusammenhangskomponente!stark} Teilgraphen \( G \subseteq H \), in denen ebenfalls gilt: für jedes Knotenpaar \( u,v \in G \) gibt es einen \( u \)-\( v \)-Pfad \emph{und} einen \( v \)-\( u \)-Pfad.
+In gerichteten Graphen sind \term{starke Zusammenhangskomponenten}\index{Zusammenhangskomponente!stark} (SCCs) Teilgraphen \( G \subseteq H \), in denen ebenfalls gilt: für jedes Knotenpaar \( u,v \in G \) gibt es einen \( u \)-\( v \)-Pfad \emph{und} einen \( v \)-\( u \)-Pfad.
 
 Insbesondere werden starke Zusammenhangskomponenten durch Zyklen erzeugt (dann kann man einfach im Kreis laufen von einem Knoten zum anderen). Das bedeutet im Umkehrschluss, dass der \term{Schrumpfgraph}\index{Schrumpfgraph} --- das ist der Graph, den man erhält, indem man jede starke Zusammenhangskomponente als einen Knoten zusammenfasst --- zyklenfrei ist.
 
@@ -46,14 +46,20 @@ Wir verwenden nun zwei Arrays zum Zwischenspeichern unserer Resultate:
 
 Beim Durchlaufen des Graphen werden die Knoten mit \code{dfsNum} inkrementell durchnummeriert.
 
+\begin{figure}[H]
+	\includegraphics[width=0.6\textwidth]{dfs_numbering}
+	\caption{Illustration of numbered edges using DFS.}
+\end{figure}
+
+
 Außerdem gibt es drei Invarianten, die wir im Folgenden nicht verletzen dürfen:
 \begin{enumerate}
-  \item Kanten von abgeschlossenen Knoten gehen zu abgeschlossenen Knoten
-  \item Offene Komponenten \( S_1,\dots,S_k \) bilden einen Pfad in \( G_C^s \).
-  \item Repräsentanten partitionieren die offenen Komponenten bezüglich ihrer \code{dfsNum}.
+  \item Kanten von abgeschlossenen Knoten (d.h. alle Kanten exploriert) gehen zu abgeschlossenen Knoten
+  \item Offene Komponenten \( S_1,\dots,S_k \) bilden einen Pfad im Schrumpfgraph von $c$, \( G_C^s \).
+  \item Jede Komponente besitzt einen Repräsentanten, welcher die offenen Komponenten bezüglich ihrer \code{dfsNum} partitioniert.
 \end{enumerate}
 
-Für das Finden von SCCs brauchen wir folgende Implementierungen für die rot gekennzeichneten Prozesuren:
+Für das Finden von SCCs brauchen wir folgende Implementierungen für die rot gekennzeichneten Prozeduren:
 \begin{itemize}
   \item \textbf{\code{root(s)}}:
   \begin{pseudocode}
@@ -93,3 +99,6 @@ Damit haben wir alles was wir brauchen, um die Suche nach SCCs durchführen zu k
   \includegraphics[width=0.6\textwidth]{SCC}
   \caption{Kompletter Durchlauf des Algorithmus}
 \end{figure}
+
+\subsection{2-zusammenhängende ungerichtete Komponenten}
+Ein solcher Graph würde mit gerichteten Kanten zu einer zusammenhängenden Komponente werden.

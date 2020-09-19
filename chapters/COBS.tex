@@ -1,0 +1,10 @@
+\chapter{A Compact Bit-Sliced Signature Index (COBS)}
+
+Motivation: Wir wollen approximative Matchings für Patterns in großen Datensätzen effizient finden.
+
+Gegeben ist ein Arrays der Länge $m$ worin $n$ Items eingefügt wurden. Es gibt $k$ paarweise unabhängige Hashfunktionen. 
+Es kann überprüft werden, ob ein Item eingefügt wurde. Diese $\text{query(x)}$-Funktion hat einen einseitigen Fehler - sie kann wahr zurückliefern, auch wenn sie nicht eingefügt wurden.  
+
+Die Wahrscheinlichkeit, dass ein bestimmtes Bit 1 ist beträgt $1-(1-\frac{1}{m})^{kn}$. Die Wahrscheinlichkeit, dass ein falsches Wahr zurückgegeben wird ist die Wahrscheinlichkeit, dass bei allen $k$ Hashfunktionen eine 1 zurückgegeben wird. 
+
+Dementsprechend können wir durch die Anzahl der Hashfunktionen bzw der Größe des Arrays die Fehlerwahrscheinlichkeit wie gewünscht beschränken.

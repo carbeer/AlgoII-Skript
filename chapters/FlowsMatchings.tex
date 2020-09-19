@@ -30,7 +30,7 @@ Ein \term{Fluss}\index{Fluss} in einem Netzwerk ist eine Funktion \( f_e \) auf 
 
 Wir definieren außerdem den \term{Wert}\index{Fluss!Wert} eines Flusses \( f \) als
 \begin{equation*}
-  \text{val}(f) = \Sigma \text{ von \( s \) ausgehender Fluss} \equiv \Sigma \text{ zu \( t \) eingehender Fluss}
+  \text{val}(f) = \Sigma \text{ von \( s \) ausgehender Fluss} = \Sigma \text{ zu \( t \) eingehender Fluss}
 \end{equation*}
 
 Ziel ist es in der Regel, einen Fluss in einem festgelegten Netzwerk mit \emph{maximalem Wert} zu finden.
@@ -66,7 +66,7 @@ Idee ist folgende:
 \begin{enumerate}
   \item Wähle einen \( s \)-\( t \)-Pfad, der noch Kapazität übrig hat.
   \item Sättige die Pfadkante mit der kleinsten Restkapazität.
-  \item Korrigiere die Kapazitäten aller anderen Kanten mithilfe des \emph{Residualgraphen} und starte wieder von vorne.
+  \item Korrigiere die Kapazitäten aller anderen Kanten mithilfe des \emph{Residualgraphen}. Gehe wieder zu Schritt (1) und wiederhole den Prozess.
 \end{enumerate}
 
 \subsection{Residualgraph}
@@ -104,8 +104,8 @@ Wir suchen jetzt nach einem \( s \)-\( t \)-Pfad \( p \), sodass jede Kante resi
 \begin{pseudocode}
   \( \Delta f \coloneqq \min_{e \in p}c_e^f \) \\
   \textbf{foreach} \( (u,v) \in p \) \textbf{do} \\
-  \phantom{\enskip} \textbf{if} \( (u,v) \in E \) \textbf{then} \( f_{(u,v)} \pluseq \Delta f \) \\
-  \phantom{\enskip} \textbf{else} \( f{(v,u)} \minuseq \Delta f \)
+  \phantom{\enskip} \textbf{if} \( (u,v) \in E \) \textbf{then} \( f_{(u,v)} \pluseq \Delta f \) \enskip{} \textcolor{gray}{// forward edge} \\
+  \phantom{\enskip} \textbf{else} \( f{(v,u)} \minuseq \Delta f \) \enskip{} \textcolor{gray}{// backward edge} 
 \end{pseudocode}
 
 Wir können nun den \term{Ford-Fulkerson-Algorithmus}\index{Ford-Fulkerson-Algorithmus} implementieren:
@@ -118,12 +118,15 @@ Wir können nun den \term{Ford-Fulkerson-Algorithmus}\index{Ford-Fulkerson-Algor
   \phantom{\enskip} \textbf{return} f
 \end{pseudocode}
 
-Die Zeitkomplexität ist \( O(m*\text{val}(f)) \), da bei jedem Durchgang der Fluss um mindestens \( 1 \) erhöht wird und jedes Mal DFS \( O(m) \) ausgeführt werden muss.
+Die Zeitkomplexität ist (bei terminierendem FF) \( O(m*\text{val}(f)) \), da bei jedem Durchgang der Fluss um mindestens \( 1 \) erhöht wird und jedes Mal DFS \( O(m) \) ausgeführt werden muss. Es gibt Netzwerke, in denen der Ford-Fulkerson-Algorithmus tatsächlich die längstmögliche Laufzeit braucht, obwohl die Lösung sehr trivial ist. 
+
+The maximum flow equals the minimum cut capacity.
 
 \subsection{Problem --- Blocking Flows}
 
 \begin{minipage}{.6\textwidth}
-  Es gibt Netzwerke, in denen der Ford-Fulkerson-Algorithmus tatsächlich die längstmögliche Laufzeit braucht, obwohl die Lösung sehr trivial ist. Grund dafür sind sogenannte \term{Blocking Flows}\index{Fluss!Blocking Flow}.
+  
+  In einigen Fällen konvergiert der Algorithmus nicht. Grund dafür sind sogenannte \term{Blocking Flows}\index{Fluss!Blocking Flow}.
 
   \( f_b \) ist ein \emph{blocking flow} in \( H \), falls für jeden \( s \)-\( t \)-Pfad \( p \) gilt:
   \begin{equation*}
@@ -146,10 +149,10 @@ Der \term{Dinic-Algorithmus}\index{Dinic-Algorithmus} sieht so aus:
 \begin{pseudocode}
   \textbf{\textsc{DinitzMaxFlow}}\( (G = (V, E), s, t, c: E \to \N) : E \to \N \) \\
   \phantom{\enskip} \( f \coloneqq 0 \) \\
-  \phantom{\enskip} \textbf{while} \( \exists \) path \( p = (s,\dots,t) \) in \( G_f \) \textbf{do} \\
-  \phantom{\enskip} \phantom{\enskip} \( d = G_f\text{.\textcolor{red}{reverseBFS}}(t) : V \to \N \) \\
-  \phantom{\enskip} \phantom{\enskip} \( \textcolor{red}{L_f} \coloneqq (V, \left \{ (u,v) \in E_f : d(v) = d(u) - 1 \right \}) \) \enskip{} \textcolor{gray}{// layer graph} \\
-  \phantom{\enskip} \phantom{\enskip} \textcolor{red}{find blocking flow} \( f_b \) in \( L_f \) \\
+  \phantom{\enskip} \textbf{while} \( \exists \) path \( p = (s,\dots,t) \) in \( G_f \) \textbf{do} \enskip{} \textcolor{gray}{// an augmented edge exists}\\
+  \phantom{\enskip} \phantom{\enskip} \( d = G_f\text{.\textcolor{red}{reverseBFS}}(t) : V \to \N \) \enskip{} \textcolor{gray}{// find shortest augmenting paths (distance) to source}\\
+  \phantom{\enskip} \phantom{\enskip} \( \textcolor{red}{L_f} \coloneqq (V, \left \{ (u,v) \in E_f : d(v) = d(u) - 1 \right \}) \) \enskip{} \textcolor{gray}{// build layer graph} \\
+  \phantom{\enskip} \phantom{\enskip} \textcolor{red}{find blocking flow} \( f_b \) in \( L_f \) \enskip{} \textcolor{gray}{// with DFS from source on layer graph}\\
   \phantom{\enskip} \phantom{\enskip} augment \( f \pluseq f_b \) \\
   \phantom{\enskip} \textbf{return} \( f \)
 \end{pseudocode}
@@ -185,7 +188,21 @@ entfernt. Formal ist das
   L_f = (V, \left \{ (u,v) \in E_f : d(v) = d(u) - 1 \right \})\text{.}
 \end{equation*}
 
-Die Laufzeit des Dinic-Algorithmus ist damit in \( O(mn^2) \).
+\subsection{Laufzeitanalyse}
+
+Blocking Flows ergibt sich mittels 
+
+\begin{equation*}
+	n \cdot \text{\#breakthroughs} + \text{\#extends} + \text{\#retreats}
+\end{equation*}
+
+eine Laufzeit von $O(m + nm) = O(nm)$.
+Spezialfälle mit niedrigerer Komplexität sind Unit Flows (mit Einheitskantengewichten) und Dynamic Trees. Letztere verringern die Komplexität von Breakthroughs, erhöhen sie aber für Retreats und Extends. Dadurch sind in der Praxis in der Regel schlechtere Ergbnisse verbunden.
+
+Die Laufzeit des Dinic-Algorithmus ist damit bei maximal $n$ Durchgängen \( O(mn^2) \) (stark polynomiell). Bei Verwendung von Dynamic Trees käme man auf $O(mn \cdot \log n)$.
+
+Unit Trees lassen sich in $O((m+n)\sqrt{m})$ berechnen. Schränkt man Unit Trees weiter ein, und fordert dass alle Kanten $v$ die Gleichung $\min{\text{indegree}(v), \text{outdegree}(v)} = 1$ erfüllen, so sprechen wir von einem Unit Network. Dieses ist durch $O(m+n\sqrt{n})$ beschränkt.
+
 
 \section{Matchings}
 
@@ -193,13 +210,15 @@ Ein \term{Matching}\index{Matching} in einem ungerichteten Graphen \( G = (V, E)
 
 Ein Matching ist \emph{maximal}, wenn es keine Kante gibt, die man aus \( E \) zum Matching hinzufügen könnte, ohne die Matching-Anforderung zu verletzen.
 
-Ein Matching hat \emph{maximale Kardinalität}, wenn es kein Matching auf \( G \) gibt, dass mehr Knoten abdeckt.
+Ein Matching hat \emph{maximale Kardinalität}, wenn es kein Matching auf \( G \) gibt, das mehr Knoten abdeckt.
 
-Wir werden Matchings zuerst einmal verwenden, um Flüsse zu berechnen.
+Wir werden Matchings zuerst einmal verwenden, um Flüsse zu berechnen. Dazu werden Source und Sink in den Graphen eingefügt und der Dinic-Algorithmus verwendet. Da dies ein Unit Flow Network ist, funktioniert dies in $O((n+m)\sqrt{n})$.
+
+Eine Verallgemeinerung für gewichtete Graphen ist nur sehr begrenzt möglich, indem eine Kontraktion von SCCs mit hoher Kapazität vorgenommen wird. 
 
 \section{Preflow-Push}
 
-Nachteil der pfadaugmentierenden Algorithmen von vorhin ist, dass man Pfade mit hoher Kapazität sehr häufig durchgehen muss aufgrund von späteren Kanten mit geringer Kapazität.
+Nachteil von pfadaugmentierenden Algorithmen ist, dass man Pfade mit hoher Kapazität aufgrund von späteren Kanten mit geringer Kapazität sehr häufig durchgehen muss.
 
 \term{Preflow-Push-Algorithmen}\index{Preflow-Push-Algorithmus} lösen dieses Problem.
 
@@ -216,8 +235,8 @@ Wir definieren nun die \code{push}\index{Push}-Funktion:
 \begin{pseudocode}
   \textbf{\textsc{push}}\( (e = (v,w), \delta) \) \\
   \phantom{\enskip} \textbf{assert} \( \delta > 0 \) \\
-  \phantom{\enskip} \textbf{assert} \(  \text{excess}(v) \geq \delta \) \\
-  \phantom{\enskip} \textbf{assert} residual capacity of \( e \geq \delta \) \\
+  \phantom{\enskip} \textbf{assert} \(  \text{excess}(v) \geq \delta \) \enskip{} \textcolor{gray}{// node is active}\\
+  \phantom{\enskip} \textbf{assert} residual capacity of \( e \geq \delta \) \enskip{} \textcolor{gray}{// edge can handle flow increase}\\
   \phantom{\enskip} \( \text{excess}(v) \minuseq \delta \) \\
   \phantom{\enskip} \( \text{excess}(w) \pluseq \delta \) \\
   \phantom{\enskip} \textbf{if} \( e \) is reverse edge \textbf{then} \( f(\text{reverse}(e)) \minuseq \delta \) \\
@@ -241,17 +260,35 @@ Wir können nun den Preflow-Push-Algorithmus implementieren:
   \phantom{\enskip} \textbf{forall} \( e = (s,v) \in E \) \textbf{do} \( \text{push}(e, c(e)) \) \\
   \phantom{\enskip} \( d(s) \coloneqq n \), \( d(v) = 0 \) for all other nodes \\
   \phantom{\enskip} \textbf{while} \( \exists \ v \in V \setminus \left \{ s, t \right \} : \text{excess}(v) > 0 \) \textbf{do} \\
-  \phantom{\enskip} \phantom{\enskip} \textbf{if} \( \exists \ e = (v,w) \in E_f : D(w) < d(v) \) \textbf{then} \enskip \textcolor{gray}{// eligible edge} \\
+  \phantom{\enskip} \phantom{\enskip} \textbf{if} \( \exists \ e = (v,w) \in E_f : d(w) < d(v) \) \textbf{then} \enskip \textcolor{gray}{// eligible (decending) edge} \\
   \phantom{\enskip} \phantom{\enskip} \phantom{\enskip} choose some \( \delta \leq \min \left \{ \text{excess}(v), c_e^f \right \} \) \\
   \phantom{\enskip} \phantom{\enskip} \phantom{\enskip} \( \text{push}(e,\delta) \) \enskip \textcolor{gray}{// no new steep edges} \\
   \phantom{\enskip} \phantom{\enskip} \textbf{else} \( d(v) \)++ \enskip \textcolor{gray}{// relabel; no new steep edges}
   \phantom{\enskip}
 \end{pseudocode}
 
-Dieser generische Algorithmus hat eine Laufzeit von \( O(n^2m) \). 
+Wichtig ist hierbei die Invariante $\forall (v,w) \in E: d(v) \leq d(w)+1$. Ist dies nicht erfüllt, so spricht man von einer steilen (Abwärts-)Kante. 
+
+Dieser generische Algorithmus hat eine Laufzeit von \( O(n^2m) \), die Laufzeit wird dominiert durch nonsaturating pushes.
+
+\subsection{FIFO Preflow Push}
+
+Bei einem Knoten werden so lange wie möglich saturierende Pushes ausgeführt bis er deaktiviert oder relabelt wird. Dann gehe zum nächsten Knoten. Die Laufzeit beträgt hierfür $O(n^{3})$. Ist daher vor allem für Graphen interessant, bei denen $m \gg n$.
+
 
 \subsection{Highest Level Preflow Push}
 
-Wählt man immer die aktiven Knoten aus, die \( d(v) \) maximieren, so kann man die Laufzeit auf \( O(n^2\sqrt{m}) \) drücken.
+Wählt man immer die aktiven Knoten aus, die \( d(v) \) maximieren, so kann man die Laufzeit auf \( O(n^2\sqrt{m}) \) drücken. Die Implementierung erfolgt mit Bucket PQ.
 
-Mit heuristischen Mitteln wie aggressivem lokalen Relabeling lässt sich der practical case weiter reduzieren.
+\subsection{Modified FIFO Selection Rule}
+Hierbei wird ein aktivierter ausgewählter Knoten solange weiter ausgewählt, bis er inaktiv wird.
+
+\subsection{Heuristiken}
+Mit heuristischen Mitteln lässt sich der practical case weiter reduzieren. 
+
+\begin{itemize}
+	\item \textbf{Aggressive local relabeling}: Hier wird nicht inkrementell um 1 relabeled wird, sondern um den minimalen Abstand + 1 einer inzidenten Kante. \\
+	\item \textbf{Global relabeling}: Zu beginng und jede $O(m)$ Kanteninspektionen werden alle Kanten mittels reverse BFS gelabelt. \\
+	\item \textbf{Returning Flow}: Sonderbehandlung von Kanten mit Level größer $n$ (, da sie sowieso nur zurückfließen) \\
+	\item \textbf{Gap Heuristiken}: Wenn ein Kantenlevel auf dem Pfad zu $t$ fehlt, so kann sich kein Knoten damit verbinden.
+\end{itemize}

@@ -38,6 +38,16 @@ Zuerst wird ein zufälliges Pivotelement gewählt. Danach wird die übergebene S
 Auf die erste und dritte Teilsequenz wird der Algorithmus nun rekursiv mit dem selben Parameter \( l \) ausgeführt, da die Buchstaben an der \( l \)-ten Position nicht übereinstimmen (müssen) --- auf die zweite Teilsequenz wird der Algorithmus rekursiv mit dem Parameter \( l+1 \) ausgeführt, weil hier die \( l \)-ten Buchstaben aller Wörter in der Sequenz gleich sind. \\
 Die Laufzeit des Algorithmus ist in \( O(\left\vert S \right\vert \log \left\vert S \right\vert + d) \), wobei \( d \) die Summe der eindeutigen Präfixe der Strings in \( S \) ist.
 
+Weiterhin gibt es das Verfahren \term{Most Significant Digit Radix Sort}. Wir müssen grundsätzlich eine minimale Anzahl von Zeichen in einer Liste von Strings ansehen, dies nennt sich das Distinguishing Prefix. Das Longest Common Prefix (LCP) ist die Anzahl der Zeichen, welche in einer sortierten Reihenfolge identisch zum vorherigen String sind.
+Kann in-place und out-of-place sortiert werden.
+
+Vorgehen:
+\begin{enumerate}
+	\item Zähle wie häufig jeder Buchstabe als erster in der Liste der Strings vorkommt.
+	\item Bilde die exklusive Präfixsumme für jeden String und sortiere anhand dessen die Strings in Buckets.
+	\item Rufe rekursiv jeden noch nicht beendeten Bucket auf.
+\end{enumerate}
+
 \section{Pattern Matching}\label{sec:patternMatching}
 
 \emph{Hinweis}: In diesem Abschnitt sind Arrays \( 1 \)-basiert. \\
@@ -173,7 +183,7 @@ Wir gehen wie folgt vor:
 
   Die Ordnung der Suffixe von \( R \) stimmt mit der Ordnung der Suffixe \( S_i \) überein, deswegen genügt es, die Suffixe von \( R \) zu sortieren.
 
-  Wir sortieren \( R \) nun, indem wir die einzelnen Charaktere von \( R \) sortieren und durch ihren Rang in \( R \) ersetzen:
+  Wir sortieren \( R \) nun, indem wir die einzelnen Charaktere von \( R \) sortieren und durch ihren Rang in \( R \) ersetzen, sprich wir invertieren sie:
   \begin{equation*}
     \text{SA}_{R} = \left( 8,0,1,6,4,2,5,3,7 \right)\text{.}
   \end{equation*}
@@ -204,9 +214,11 @@ Wir gehen wie folgt vor:
   Hier ist z.B. \( S_1 < S_6 \) weil \( \left( \texttt{a}, 4 \right) < \left( \texttt{a}, 5 \right) \) und \( S_3 < S_8 \) weil \( \left( \texttt{b}, \texttt{a}, 6 \right) < \left( \texttt{b}, \texttt{a}, 7 \right) \).
 \end{enumerate}
 
+Die Suffixtabellenkonstruktion kann verallgemeinert werden mit Diff-Überdeckungen, um die Platzeffizienz der Implementierung zu steigern.
+
 \subsection{Suchen in Suffix-Arrays}
 
-Um ein Pattern in einem String zu finden, zu dem man das Suffix-Array konstruiert hat, muss man lediglich ein Suffix finden, dass das gesuchte Pattern als Präfix hat. Man kann so beispielsweise mit binärer Suche in \( O(m\log n) \) ein Vorkommen von \( P \) in \( T \) finden.
+Um ein Pattern in einem String zu finden, zu dem man das Suffix-Array konstruiert hat, muss man lediglich ein Suffix finden, das das gesuchte Pattern als Präfix hat. Man kann so beispielsweise mit binärer Suche in \( O(m\log n) \) ein Vorkommen von \( P \) in \( T \) finden.
 
 Nutzen wir eine zusätzliche Struktur, das \term{LCP-Array}\index{LCP-Array} --- dieses speichert in \( \text{LCP}[i] \) die Länge des längsten gemeinsamen Präfixes von \( \text{SA}[i] \) und \( \text{SA}[i-1] \) --- so können wir die Suchzeit auf \( O(m + \log n) \) reduzieren.
 
@@ -260,6 +272,22 @@ Zur Angabe der Komplexitäten sind zwei Fälle zu unterscheiden:
   \item Die ausgehenden Kanten sind als Arrays der Größe \( \left\vert \Sigma \right\vert \) gespeichert. Dann ist die Suchzeit in \textcolor{green!60!black}{\( O(m) \)} und der Gesamtplatzbedarf in \textcolor{red!80!black}{\( O(n\left\vert \Sigma \right\vert) \)}.
   \item Die ausgehenden Kanten sind als Arrays gespeichert, deren Größe proportional zur Anzahl der Kinderknoten ist. Dann ist die Suchzeit in \textcolor{red!80!black}{\( O(m\log \left\vert \Sigma \right\vert ) \)} und der Gesamtplatzbedarf in \textcolor{green!60!black}{\( O(n) \)}.
 \end{enumerate}
+
+
+\subsection{Suffix Arrays mit Präfix-Verdoppelung}
+Gegeben eines Strings, bilden wir eine Liste aller längstmögliche Suffixe innerhalb des Strings. Das Suffix-Array gibt dabei jeweils an, wie viele Suffixe kleiner sind als das gegebene Suffix. Das Inverse Suffix ist die Inverse Funktion hierzu.
+
+\begin{enumerate}
+	\item $n\coloneqq 1$
+	\item Finde eine Ordnung für Suffixe der Länge 1 und berechne jeweils die Anzahl der Präfixe, die kleiner sind. 
+	\item Analysiere die nächsten $n$ Zeichen des Suffixes. Schaue nach, wie viele Präfixe dieser Form aus dem vorigen Schritt kleiner sind und ordne die Suffixe dementsprechend. 
+	\item $n++$
+	\item Aktualisiere die Anzahl der kleinsten Präfixe für die Länge von $n$. 
+	\item Gehe zu 2.
+\end{enumerate}
+
+Der Output ist eine sortierte Liste mit Suffixen. 
+
 
 \section{Datenkompression}
 

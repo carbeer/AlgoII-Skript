@@ -20,7 +20,7 @@ Eine \term{adressierbare Prioritätsliste}\index{Adressierbare Prioritätsliste}
     \textbf{\textsc{insert}}\( (e) \) & \( M \coloneqq M \cup \left \{ e \right \} \) \\
     \textbf{\textsc{min}} & \textbf{return} \( \min M \) \\
     \textbf{\textsc{deleteMin}} & \( e \coloneqq \min \); \enskip{} \( M \coloneqq M \setminus \left \{ e \right \} \); \enskip{} \textbf{return} \( e \) \\
-    \textbf{\textsc{remove}}\( (h : \text{Handle}) \) & \( e \coloneqq h \); \enskip{} \( M \coloneqq M \setminus \left \{ e \right \} \); \enskip{} \textbf{return} \( e \) \\
+    \textbf{\textsc{remove}}\( (h : \text{Handle}) \) & \( e \coloneqq h \); \enskip{} \( M \coloneqq M \setminus \left \{ e \right \} \); \enskip{} \textbf{return} \( e \) \textcolor{gray}{// Handle ist ein Pointer}\\
     \textbf{\textsc{decreaseKey}}\( (h : \text{Handle}, k : \text{Key}) \) & \( \text{key}(h) \coloneqq k \) \\
     \textbf{\textsc{merge}}\( (M') \) & \( M \coloneqq M \cup M' \)
   \end{tabular}
@@ -150,7 +150,7 @@ Wir werden als nächstes \emph{Fibonacci-Heaps} verwenden, um noch mehr Leistung
 
 \section{Fibonacci-Heaps}
 
-Mithilfe von Fibonacci-Heaps erhalten wir eine amortisierte Komplexität von \( O(\log n) \) für \code{deleteMin} und \( O(1) \) für alle anderen Operationen.
+Mithilfe von Fibonacci-Heaps erhalten wir eine amortisierte Komplexität von \( O(\log n) \) für \code{deleteMin} und \code{remove} und \( O(1) \) für alle anderen Operationen.
 
 Fibonacci-Heaps speichern ein paar Zusatzinformationen pro Knoten ab, wodurch neue Hilfsfunktionen kreiert werden können, die diese Beschleunigung ermöglichen:
 
@@ -187,7 +187,7 @@ Fibonacci-Heaps speichern ein paar Zusatzinformationen pro Knoten ab, wodurch ne
 
 \subsection{Funktionalität}
 
-\code{insert} und \code{merge} werden wie gehabt implementiert. \code{decreaseKey} verwendet die neue \code{cascadingCut}-Methode und \code{deleteMin} Union-by-Rank. Wir beschleunigen Union-by-Rank, indem wir ein Feld pro Rank bereitstellen und Knoten in diese Felder eintragen. Sollte das passende Feld bereits belegt sein, so wird der neue Knoten mit dem Knoten, der sich im Feld befindet gelinkt und entsprechend verschoben.
+\code{insert} und \code{merge} werden wie gehabt implementiert. \code{decreaseKey} verwendet die neue \code{cascadingCut}-Methode und \code{deleteMin} Union-by-Rank. Wir beschleunigen Union-by-Rank, indem wir ein Feld pro Rank bereitstellen und Knoten in diese Felder eintragen. Sollte das passende Feld bereits belegt sein, so wird der neue Knoten mit dem Knoten, der sich im Feld befindet mittels union-by-rank gelinkt und entsprechend verschoben.
 
 \begin{minipage}{.625\textwidth}
   \begin{pseudocode}
